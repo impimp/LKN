@@ -1,0 +1,14 @@
+{
+	"name": "Basic memory",
+	"description": "Matches (MemTotal|MemFree|Cached|SwapTotal|SwapFree|Buffers)",
+
+	"regexp_replace": {
+		"pattern": "^systemMetrics\\.memory\\.(MemTotal|MemFree|Cached|SwapTotal|SwapFree|Buffers).+$",
+		"replacement": "node_memory_\\1_bytes",
+		"modifiers": ["kbytes_to_bytes"],
+		"labels" : {
+			"label_name": "dupa \\1",
+			"label_name_2": "\\1 dupa"
+		}
+	}
+}

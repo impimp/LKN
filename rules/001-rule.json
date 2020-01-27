@@ -1,0 +1,26 @@
+{
+	"name": "optional field",
+	"description": "optional field",
+
+	"simple": {
+		"pattern": "systemMetrics.memory.Active_kb",
+		"replacement": "to"
+	},
+
+	"regexp_group": {
+		"pattern": "^serverStatus.wiredTiger.cache.+",
+		"replacement": "to2",
+		"count": "5|>5|>=5|<5|<=5"
+	},
+
+	"regexp_replace": {
+		"pattern": "^systemMetrics.netstat.Tcp:(.*)$",
+		"replacement": "network_\\1",
+		"count": "5|>5|>=5|<5|<=5"
+	},
+
+	"external": {
+		"execPath": "scripts/0001"
+	}
+
+}
