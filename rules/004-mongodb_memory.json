@@ -1,0 +1,12 @@
+{
+	"name": "MongoDB memory",
+	"description": "",
+
+	"regexp_replace": {
+		"pattern": "serverStatus\\.mem\\.(.*)",
+		"replacement": "mongodb_memory",
+		"labels": {
+			"type": "\\1"
+		}
+	}
+}
