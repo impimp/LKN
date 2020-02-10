@@ -1,0 +1,10 @@
+{
+	"name": "mongodb_instance_uptime_estimate_seconds",
+	"description": "",
+
+
+	"simple": {
+		"pattern": "serverStatus.uptime",
+		"replacement": "mongodb_instance_uptime_estimate_seconds"
+	}
+}
