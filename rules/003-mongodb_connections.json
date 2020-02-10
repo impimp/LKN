@@ -1,0 +1,12 @@
+{
+	"name": "MongoDB connections",
+	"description": "",
+
+	"regexp_replace": {
+		"pattern": "serverStatus\\.connections\\.(available|current)",
+		"replacement": "mongodb_mongod_connections",
+		"labels": {
+			"state": "\\1"
+		}
+	}
+}
