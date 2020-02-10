@@ -1,0 +1,10 @@
+{
+	"name": "mongodb_mongod_extra_info_page_faults_total",
+	"description": "",
+
+
+	"simple": {
+		"pattern": "serverStatus.extra_info.page_faults",
+		"replacement": "mongodb_mongod_extra_info_page_faults_total"
+	}
+}
