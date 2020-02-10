@@ -5,7 +5,7 @@ from subprocess import PIPE, Popen
 #import psycopg2
 from datetime import datetime
 import argparse
-
+import binascii
 
 class Modifiers:
 
@@ -67,13 +67,20 @@ class Rule:
 	def loadInput(self, input):
 		self._input = input
 
+	def hashDict(labels):
+		labels_ = str(sorted(labels.items(), key=lambda kv: kv[1]))
+		return binascii.crc32(labels_.encode('utf8'))
 
 	def createMetric(self, name, value, labels):
-		self._result[name] = { 'data': value, 'labels': labels }
-
+		labels={**labels}
+		key = "{}:{}".format(name, Rule.hashDict(labels))
+		self._result[key] = { 'data': value, 'labels': labels }
+		
 	def updateMetric(self, name, value, labels):
-		self._result[name]['data'] +=  value
-		self._result[name]['labels'].update(labels)
+		labels={**labels}
+		key = "{}:{}".format(name, Rule.hashDict(labels))
+		self._result[key]['data'] +=  value
+		#self._result[name]['labels'].update(labels)
 
 	def _evaluateModifiers(self, input, modifiers):
 		i_ = input
@@ -106,15 +113,15 @@ class Rule:
 				value_ = self._evaluateModifiers(self._input[key], self._rule['regexp_group'].get('modifiers'))
 
 				if "labels" in self._rule['regexp_group']:
-					for label,label_pattern in self._rule['regexp_group']['labels']:
+					for label,label_pattern in self._rule['regexp_group']['labels'].items():
 						if not label in self._labels:
-							label_value = re.sub(_rule['regexp_group']['replacement'], label_pattern, self._input[key])
+							label_value = re.sub(self._rule['regexp_group']['pattern'], label_pattern, key)
 							labels_[label] = label_value
-				
+
 				try:
-					self.createMetric(self._rule['regexp_group']['replacement'], value_, labels_)
-				except KeyError:
 					self.updateMetric(self._rule['regexp_group']['replacement'], value_, labels_)
+				except KeyError:
+					self.createMetric(self._rule['regexp_group']['replacement'], value_, labels_)
 
 				c = c + 1
 		return c
@@ -127,13 +134,13 @@ class Rule:
 			if re.match(self._rule['regexp_replace']['pattern'], key):
 				name_ = re.sub(self._rule['regexp_replace']['pattern'], self._rule['regexp_replace']['replacement'], key)
 				value_ = self._evaluateModifiers(self._input[key], self._rule['regexp_replace'].get('modifiers'))
-
+				
 				if "labels" in self._rule['regexp_replace']:
 					for label,label_pattern in self._rule['regexp_replace']['labels'].items():
 						if not label in self._labels:
 							label_value = re.sub(self._rule['regexp_replace']['pattern'], label_pattern, key)
 							labels_[label] = label_value
-				
+
 				self.createMetric(name_, value_, labels_)
 				c = c + 1
 		return c
@@ -216,11 +223,12 @@ class Sink:
 			','.join('{}="{}"'.format(key, value) for key, value in self._labels.items()),
 			input['start'],
 			1)
+		
 		for metric in input['data']:
 			l_={**input['data'][metric]['labels'], **self._labels}
 			labels_ = ','.join('{}="{}"'.format(key, value) for key, value in l_.items())
-
-			self.saveHandler(metric,
+			metric_ = re.sub(r"(.*):.*", r"\1", metric)
+			self.saveHandler(metric_,
 				labels_,
 				input['start'],
 				input['data'][metric]['data'])
